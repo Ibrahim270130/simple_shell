@@ -1,53 +1,109 @@
-#ifndef _SHELL_H_
-#define _SHELL_H_
+#ifndef SHELL_H
+#define SHELL_H
 
-#include <string.h>
-#include <fcntl.h>
-#include <signal.h>
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <sys/wait.h>
+#include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
-#include <errno.h>
-#include <stdio.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <fcntl.h>
+#include <sys/wait.h>
+#include <string.h>
+#include <limits.h>
+#include <signal.h>
 
-/* execute.c functions */
-void execute(char **command, char *name, char **env, int cycles);
+#define FALSE 0
+#define TRUE 1
+#define NEITHER 2
+#define MATCH 3
+#define PREFIX 4
+#define EXIT_SHELL 5
+#define SKIP_FORK 6
+#define DO_EXECVE 7
 
-/* errors.c functions */
-void error_messages(char *name, int cycles, char **command);
+/**
+ * struct Alias - singly linked list
+ * @name: name of alias
+ * @value: command that alias calls
+ * @next: points to next node
+ */
+typedef struct Alias
+{
+	char *name;
+	char *value;
+	struct Alias *next;
+} alias;
 
-/* memory_handler.c functions */
-void free_n_exit(char **command);
-void free_all(char **command);
+extern char **environ;
 
-/* string_functions.c functions */
-int _strcmp(char *string1, char *string2);
-char *_strcat(char *dest, char *src);
-char *_strcpy(char *dest, char *src);
+extern int status;
+
+extern int line_num;
+
+extern char *shell_name;
+
+int command_manager(char **args);
+
+int built_ins(char **args);
+
+int and_or(char **args, char operator, int last_compare);
+
+char *check_command(char **args);
+
+int execute_command(char **args);
+
+char *input_san(char *old_buf, size_t *old_size);
+
+int input_err_check(char *ptr);
+
+void err_message(char *arg0, char *arg1);
+
+void *_realloc(void *ptr, unsigned int old_size, unsigned int new_size);
+
+int _getline(char **line_ptr, size_t *n, int file);
+
+char *check_for_vars(char *arg);
+
+int _strlen(char *str);
+
+char *_strdup(char *src);
+
+char *str_concat(char *s1, char *s2);
+
+int str_compare(char *s1, char *s2, int pref_or_match);
+
+char *get_array_element(char **array, char *element_name);
+
+char **make_array(char *str, char delim, char **if_sep);
+
+int list_len(char **list, char *entry);
+
+char **array_cpy(char **old_array, int new_size);
+
+int free_array(char **args);
+
+int _setenv(const char *name, const char *value);
+
+int _unsetenv(const char *name);
+
+int change_dir(char *name);
+
+int alias_func(char **args, int free);
+
+int free_aliases(alias *alias_ptr);
+
+int check_if_alias(char **args, alias *alias_ptr);
+
+int print_aliases(alias *alias_ptr);
+
+int print_alias_value(char *arg, alias *alias_ptr);
+
+int set_alias_value(char *arg, alias *alias_ptr, char *new_value);
+
+int print_env(void);
+
+char *_itoa(int n);
+
 int _atoi(char *s);
-int _strlen(char *string);
-
-/* environment.c functions */
-void _printenv(char **env);
-char **_getpath(char **env);
-
-/* process.c functions */
-int change_dir(const char *path);
-void launch_subprocess(char **command, char *name, char **env, int cycles);
-
-/* shell.c functions */
-int main(int ac, char **av, char **env);
-
-/* shell_run.c functions */
-void tipresh_prompt(void);
-void ctrl_c_handler(int signals);
-void _EOF(char *buffer);
-void exit_shell(char **command);
-
-/* tokenizer.c functions */
-char **tokenizer(char *buffer, const char *delim);
-
 
 #endif
